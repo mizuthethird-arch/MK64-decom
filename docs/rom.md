@@ -56,4 +56,4 @@ The implementation of these checks lives in `tools/rom-check` and is specified b
 
 - [scope.md](scope.md): what the rebuild ships and what is parked
 - [rom-contract.md](rom-contract.md): the exact acceptance rule, the byte orders and the mismatch behaviour
-- `docs/legal.md`: the legal and asset policy (written by its own task)
+- [legal.md](legal.md): the legal, asset and key policy
