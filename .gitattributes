@@ -1,0 +1,17 @@
+# Shell scripts and the CI workflow run on Linux: LF must survive a Windows checkout.
+*.sh        text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+Dockerfile  text eol=lf
+*.Dockerfile text eol=lf
+
+# Markdown and Python are plain text; git normalises to LF in the repository.
+*.md        text eol=lf
+*.py        text eol=lf
+*.gitignore text eol=lf
+*.gitattributes text eol=lf
+
+# The game image is user supplied (see docs/rom.md) and must never be committed.
+*.n64       binary
+*.v64       binary
+*.z64       binary

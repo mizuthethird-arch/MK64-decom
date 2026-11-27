@@ -1,0 +1,106 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  no-rom:
+    name: no ROM in tracked files
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: fail if the ROM or a ROM image is tracked
+        run: |
+          set -eu
+          tracked=$(git ls-files)
+          if [ -z "$tracked" ]; then
+            echo "FAIL: git ls-files returned nothing; cannot prove the ROM is absent" >&2
+            exit 1
+          fi
+          forbidden=$(printf '%s\n' "$tracked" | grep -Ei '(^|/)rom/|\.(n64|v64|z64)$' || true)
+          if [ -n "$forbidden" ]; then
+            echo "FAIL: ROM content is tracked in this repository:" >&2
+            printf '%s\n' "$forbidden" >&2
+            exit 1
+          fi
+          echo "OK: no rom/ path and no .n64/.v64/.z64 file is tracked ($(printf '%s\n' "$tracked" | wc -l) files checked)"
+
+  docs:
+    name: documentation suite
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container:
+      image: python:3.12-slim@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: run the docs suite
+        # unittest exits 0 when discovery finds nothing and a bare pipe returns tee's status, so both are guarded.
+        shell: bash
+        run: |
+          set -euo pipefail
+          log=$(mktemp)
+          trap 'rm -f "$log"' EXIT
+          python -m unittest discover -s tests/docs -p 'test_*.py' 2>&1 | tee "$log"
+          ran=$(grep -Eo '^Ran [0-9]+ tests?' "$log" | grep -Eo '[0-9]+' || true)
+          if [ -z "$ran" ]; then
+            echo "FAIL: the docs suite printed no 'Ran N tests' line, so it did not run to completion" >&2
+            exit 1
+          fi
+          if [ "$ran" -eq 0 ]; then
+            echo "FAIL: discovery found 0 tests; a green run with nothing executed is a silent pass" >&2
+            exit 1
+          fi
+          echo "OK: docs suite ran $ran tests"
+
+  deep-scan:
+    name: deep ROM content scan
+    # Opt-in and deliberately not a required check: the scan fails closed without the user-supplied ROM
+    # (exit 2), which is every public runner, so running it on every PR would leave CI permanently red.
+    if: ${{ vars.MK64_DEEP_SCAN == 'on' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    container:
+      image: python:3.12-slim@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: scan every tracked file for resident ROM content
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tools/scan-for-rom-content.py . --rom "rom/Mario Kart 64 (Europe) (Rev A).n64"
+
+  toolchain:
+    name: rust toolchain image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: build the pinned rust image
+        run: docker build -t mk64-rust:ci -f docker/rust.Dockerfile .
+      - name: verify rustc cargo rustfmt and clippy work inside it
+        run: |
+          docker run --rm --network=none --read-only \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            -v "$PWD/tools:/tools:ro" \
+            --entrypoint /bin/sh mk64-rust:ci /tools/verify-docker.sh

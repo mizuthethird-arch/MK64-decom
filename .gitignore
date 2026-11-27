@@ -1,0 +1,24 @@
+# The game image is user supplied: never committed, never shipped. See docs/rom.md.
+rom/*
+!rom/.gitkeep
+*.n64
+*.v64
+*.z64
+
+# Build outputs
+target/
+*.o
+*.elf
+*.map
+
+# Python bytecode from the documentation tests
+__pycache__/
+*.pyc
+
+# Run artefacts: container transcripts, build logs and red/green evidence.
+# They document a session, they are not source, and they change on every run.
+logs/
+tests/docs/evidence/
+
+# Local index caches
+.cache/
