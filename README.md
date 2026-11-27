@@ -18,6 +18,8 @@ A 100% Rust rebuild of Mario Kart 64 (Europe) (Rev A), proven byte for byte agai
 - [docs/corpus.md](docs/corpus.md): corpus retention, the size ceiling and the release-gate exemption.
 - [docs/release.md](docs/release.md): the version scheme, the tag rule, hotfixes and the support window.
 - [docs/measurement.md](docs/measurement.md): the command behind every reported metric.
+- [docs/secrets.md](docs/secrets.md): every secret, its storage, rotation and failure behaviour, and the scan rule.
+- [docs/pr-rules.md](docs/pr-rules.md): what a pull request may not contain, and the check that enforces each rule.
 
 ## Layout
 

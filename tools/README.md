@@ -63,13 +63,38 @@ rather than a stack of guesses.
 | `run-container.sh` | host helper; runs a workspace script in the image as the image's own `mk64` user, logs to `src/logs/<name>.txt` |
 | `test-verify-docker.sh` | RED/GREEN harness for the image: fails on an image lacking rustfmt/clippy, passes on the pinned one |
 | `test-bootstrap.sh` | copies the repo to a scratch dir and asserts `bootstrap.sh` reaches `BOOTSTRAP-OK` |
+| `test-secret-scan.sh` | proves the secret scan: clean tree passes, eight planted secrets are each detected, a clean file stays clean |
 | `scan-for-rom-content.py` | opt-in deep scan for resident ROM content in tracked files |
 | `bootstrap.sh` | the one command above |
 
 ```sh
 sh tools/test-verify-docker.sh   # image proof, writes src/logs/test-verify-docker.txt
 sh tools/test-bootstrap.sh       # bootstrap proof, writes src/logs/test-bootstrap.txt
+sh tools/test-secret-scan.sh     # secret-scan proof, writes src/logs/test-secret-scan.txt
 ```
+
+## Secret scan
+
+`.gitleaks.toml` at the repository root configures the scan. It keeps gitleaks' default
+rules and adds `mk64-private-key-header`, which catches a bare
+`-----BEGIN RSA|EC|OPENSSH|PGP|DSA PRIVATE KEY-----` header — the default rules miss
+that on its own, and a leaked header is the first line of a key.
+
+Two CI jobs use it, both with the image pinned by digest and run with `--network none`:
+
+| job | display name | when | timeout |
+|---|---|---|---|
+| working tree scan | `secret scan` | every push and pull request | 10 min |
+| history scan | `secret history scan` | only when `vars.MK64_HISTORY_SCAN == 'on'`, or a manual run | 20 min |
+
+The working tree scan is the required check. The history scan is opt-in because a secret
+committed once stays exposed in a public repository's history, but rescanning all of it on
+every pull request is slow and gets ignored.
+
+Scans run with `--source .` so reported paths are relative; the allowlist in
+`.gitleaks.toml` matches **paths**, never patterns, so the shapes it tolerates inside the
+scanner and its fixtures are still detected anywhere else in the tree. Every gitleaks
+error exits nonzero, so the step fails closed rather than passing quietly.
 
 ## Toolkit follow-up needed (for the docs lane)
 

@@ -26,6 +26,8 @@ Every page that governs this repository, and the one thing to know about each. T
 | [release.md](release.md) | the version scheme, the tag rule, hotfixes and the support window |
 | [measurement.md](measurement.md) | the command behind every reported metric |
 | [handover.md](handover.md) | the four-field handover note for every settled contract |
+| [secrets.md](secrets.md) | every secret with storage, owner, rotation and failure behaviour, and the scan rule |
+| [pr-rules.md](pr-rules.md) | what a pull request may not contain, and the check that enforces each rule |
 
 ## Behaviour settled by recent tasks
 
@@ -57,6 +59,8 @@ These items belong to the toolkit lane and are recorded here because the docs la
 | Wire the prompt renderer to the plan data and make it the source of every task prompt, so no prompt is hand-assembled. | `tools/prompt/README.md` |
 | Run `src/tests/docs/plan_lint.py` over the plan data in CI, and fail the job on any violation other than the known unmeasurable done conditions. | the CI workflow |
 | Read the blueprint `INTERFACES` registry at build time so `docs/handover.md` is generated rather than snapshotted. | the corpus or docs tooling |
+| Add the **secret scan** job: gitleaks pinned by digest, a working-tree scan blocking on every pull request, a history scan gated on `vars.MK64_HISTORY_SCAN`, and a custom private-key-header rule. The rule set it must satisfy is executable in `src/tests/docs/secret_scan.py`. | the CI workflow |
+| Add the checks for the six unenforced pull-request rules in `docs/pr-rules.md`, one row per rule: (4) a cargo-deny licence check over the dependency tree once the first Cargo.toml exists; (5) the `nm`/`ldd` C++ check from `docs/rust-only.md` against the shipped binary; (6) the docs job comparing the discovered test count against the base branch and failing if it decreased; (7) a path-based owner-only edit guard for policy, hook, agent-definition and workflow paths; (8) a blueprint-task-id field in the pull request template, validated by a job; (9) a reviewer checklist item for unverified claims. | the CI workflow and the pull request template |
 
 ## Prose and executable
 
