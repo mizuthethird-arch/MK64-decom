@@ -22,6 +22,9 @@ Every page that governs this repository, and the one thing to know about each. T
 | [rust-only.md](rust-only.md) | every shipped crate is Rust, and the one C++ exception that never ships |
 | [parity-statement.md](parity-statement.md) | the single parity statement, included by reference everywhere else |
 | [backlog.md](backlog.md) | the backlog, its critical path and the weekly review template |
+| [corpus.md](corpus.md) | corpus retention, the 20 GiB ceiling and the release-gate exemption |
+| [release.md](release.md) | the version scheme, the tag rule, hotfixes and the support window |
+| [measurement.md](measurement.md) | the command behind every reported metric |
 
 ## Behaviour settled by recent tasks
 
@@ -35,6 +38,11 @@ These are the decisions a later agent would otherwise re-derive. Each one is enf
 | Two definitions of done exist. A shell task is proven by reachability, strings, failures and accessibility; an engine task is proven by hashes. A task touching both is owned by the engine definition (the engine definition of done wins). | [agent-rules.md](agent-rules.md) | `src/tests/docs/done_family.py` |
 | The parity statement exists once, in [parity-statement.md](parity-statement.md), and every other page includes it by marker rather than paraphrasing it. | [parity-statement.md](parity-statement.md) | `src/tests/docs/test_parity_statement.py` |
 | No page is named after the agent-file convention that some harnesses auto-load as instructions; the rules page is `agent-rules.md` for that reason. | [agent-rules.md](agent-rules.md) | `src/tests/docs/test_agents.py` |
+| The corpus is capped at 20 GiB. A release-gate scene is never pruned, and a prune that cannot free enough space refuses and names the largest scenes. | [corpus.md](corpus.md) | `src/tests/docs/corpus_retention.py` |
+| A release tag must be `vMAJOR.MINOR.PATCH` and must be an ancestor of the release branch. A hotfix is cut on `hotfix/vX.Y.Z` from the tag, never from the head of the release branch. | [release.md](release.md) | `src/tests/docs/release_tag.py` |
+| Support window: only the latest MINOR and the versions inside its window are supported. A security fix is backported only inside the window, and there is no backport to unsupported versions. The bug report form requires the version and cites the support window. | [release.md](release.md) | `src/tests/docs/test_release.py` |
+| An incident follows a written procedure: every withdrawal step names a command, an owner and a time limit, the only contact path is the GitHub security advisory contact, and a false report is answered without conceding the claim. The rehearsal is not done because no staging release exists. | [legal.md](legal.md) | `src/tests/docs/test_incident.py` |
+| Every reported number has a command behind it, and a machine-dependent number is reported with its machine. A metric measured on one machine is stated as such. | [measurement.md](measurement.md) | `src/tests/docs/test_measurement.py` |
 
 ## Prose and executable
 
