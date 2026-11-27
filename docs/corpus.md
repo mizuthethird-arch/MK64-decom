@@ -57,10 +57,12 @@ Only audited artifacts leave the machine, and only these kinds:
 
 | Shareable kind | What it is | Cap |
 |---|---|---|
-| hash | the per-artifact hashes of a run | none beyond the corpus ceiling |
-| counter | frame counts, cycle counts, draw counters, dropped frames | none |
+| hash | the per-artifact hashes of a run | 64 MiB |
+| counter | frame counts, cycle counts, draw counters, dropped frames | 64 MiB |
 | log | a text log of a run or a comparison | 1 MiB, because a log is a report, not a payload |
 | report | a summary of a comparison, in text | 1 MiB |
+
+Every kind has a cap. No artifact is uploaded unbounded: an unbounded upload is a denial-of-service and abuse vector, and "hashes are small by nature" is an assumption rather than an invariant. An artifact over its kind's cap blocks the upload, and the refusal names the kind and the size.
 
 The list is an allowlist. A kind that is not on it is refused even if it looks harmless, so a new artifact kind cannot be uploaded by accident.
 
