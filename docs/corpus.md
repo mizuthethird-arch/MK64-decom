@@ -47,6 +47,48 @@ The corpus is derived data, not source. It can always be rebuilt from the user's
 
 A corpus that cannot be regenerated this way is not a corpus this project keeps: the recordings are re-derivable, and the row order never matters.
 
+## Sharing the corpus, and what CI may upload
+
+The corpus is derived data, but it is derived from copyrighted game data. Sharing it is therefore a policy decision, not a convenience, and the CI job that uploads artifacts is the place where a mistake becomes permanent.
+
+### What may be uploaded
+
+Only audited artifacts leave the machine, and only these kinds:
+
+| Shareable kind | What it is | Cap |
+|---|---|---|
+| hash | the per-artifact hashes of a run | none beyond the corpus ceiling |
+| counter | frame counts, cycle counts, draw counters, dropped frames | none |
+| log | a text log of a run or a comparison | 1 MiB, because a log is a report, not a payload |
+| report | a summary of a comparison, in text | 1 MiB |
+
+The list is an allowlist. A kind that is not on it is refused even if it looks harmless, so a new artifact kind cannot be uploaded by accident.
+
+### What may never be uploaded
+
+| Forbidden kind | Why |
+|---|---|
+| the game image | the image is the player's own copyrighted file; it never leaves their machine |
+| any payload blob | a recording that embeds game bytes is the game data by another name |
+| any extracted asset | a texture, display list, sample bank, sequence, track data or font taken from the image |
+| any recording that embeds game bytes | a framebuffer dump or audio buffer is game data even when it is not a whole asset |
+| any file whose kind is not on the allowlist | an unaudited artifact is refused rather than guessed |
+
+One forbidden item blocks the entire upload. A partial upload of an audited set is worse than no upload, because the partial set looks complete.
+
+### The audit-before-upload rule
+
+The CI corpus job must run an **audit step before any upload step**, and a failed audit must block the upload.
+
+| Requirement | Exact statement a reviewer can check |
+|---|---|
+| Ordering | the audit step runs before the upload step, and the upload step does not run when the audit fails |
+| Decision | the audit applies the allowlist in `src/tests/docs/upload_audit.py` to the declared artifact list |
+| Failure | a single forbidden, unknown or malformed item fails the job and names that item; nothing is uploaded |
+| Empty list | an empty artifact list is refused, because an upload with nothing audited is not an audit |
+
+The audit's own rules are executable today: `upload_audit.py` takes an artifact list and returns allowed or blocked with a named reason per item, and refuses the whole upload when any item is forbidden.
+
 ## What is stored, and what never is
 
 | Stored | Never stored |
@@ -60,10 +102,12 @@ A corpus that cannot be regenerated this way is not a corpus this project keeps:
 | Part of this page | Executable today |
 |---|---|
 | the ceiling, the refusal and the release-gate exemption | yes: `src/tests/docs/corpus_retention.py` is the policy as a pure function, and `src/tests/docs/test_corpus.py` checks the ceiling report, the pruning order and the refusal |
+| the sharing allowlist and the audit decision | yes: `src/tests/docs/upload_audit.py` with `src/tests/docs/test_upload_audit.py`, covering the shareable kinds, every forbidden kind, one-item-blocks-all, and empty or malformed input |
+| the audit-before-upload ordering in the workflow | not implemented: the corpus CI job does not exist yet, and the workflow files are outside the docs lane |
 | the regeneration path | prose |
 | the storage layout | prose |
 
-The real corpus tool is built in a later phase and **is not yet implemented**. It must call the policy in `src/tests/docs/corpus_retention.py` rather than reimplementing the ceiling or the exemption. Until it exists, the policy is proven by tests and nothing enforces it at run time.
+The real corpus tool is built in a later phase and **is not yet implemented**. It must call the policy in `src/tests/docs/corpus_retention.py` for retention and `src/tests/docs/upload_audit.py` for sharing, rather than reimplementing either. Until it exists, both policies are proven by tests and nothing enforces them at run time.
 
 ## Related
 
