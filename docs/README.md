@@ -25,6 +25,7 @@ Every page that governs this repository, and the one thing to know about each. T
 | [corpus.md](corpus.md) | corpus retention, the 20 GiB ceiling and the release-gate exemption |
 | [release.md](release.md) | the version scheme, the tag rule, hotfixes and the support window |
 | [measurement.md](measurement.md) | the command behind every reported metric |
+| [handover.md](handover.md) | the four-field handover note for every settled contract |
 
 ## Behaviour settled by recent tasks
 
@@ -43,6 +44,19 @@ These are the decisions a later agent would otherwise re-derive. Each one is enf
 | Support window: only the latest MINOR and the versions inside its window are supported. A security fix is backported only inside the window, and there is no backport to unsupported versions. The bug report form requires the version and cites the support window. | [release.md](release.md) | `src/tests/docs/test_release.py` |
 | An incident follows a written procedure: every withdrawal step names a command, an owner and a time limit, the only contact path is the GitHub security advisory contact, and a false report is answered without conceding the claim. The rehearsal is not done because no staging release exists. | [legal.md](legal.md) | `src/tests/docs/test_incident.py` |
 | Every reported number has a command behind it, and a machine-dependent number is reported with its machine. A metric measured on one machine is stated as such. | [measurement.md](measurement.md) | `src/tests/docs/test_measurement.py` |
+| A task prompt is rendered from the template, never hand-assembled, and an empty required field rejects the task instead of producing a prompt with a hole. All 1,036 authored tasks render. | [task-template.md](task-template.md) | `src/tests/docs/task_render.py` |
+| Every settled contract carries a handover note naming producer, consumer, settled decisions and open questions. A consumer task reads it before starting and never starts from an unsettled contract. | [handover.md](handover.md) | `src/tests/docs/handover.py` |
+| The plan lint checks the full rule set from the rules page and reports the real plan's violations rather than hiding them: 450 of 1,036 done conditions are prose without a measurable marker. | [agent-rules.md](agent-rules.md) | `src/tests/docs/plan_lint.py` |
+
+## Toolkit follow-up needed
+
+These items belong to the toolkit lane and are recorded here because the docs lane cannot do them.
+
+| Item | Where it belongs |
+|---|---|
+| Wire the prompt renderer to the plan data and make it the source of every task prompt, so no prompt is hand-assembled. | `tools/prompt/README.md` |
+| Run `src/tests/docs/plan_lint.py` over the plan data in CI, and fail the job on any violation other than the known unmeasurable done conditions. | the CI workflow |
+| Read the blueprint `INTERFACES` registry at build time so `docs/handover.md` is generated rather than snapshotted. | the corpus or docs tooling |
 
 ## Prose and executable
 
