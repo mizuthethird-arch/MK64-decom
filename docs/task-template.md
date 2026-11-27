@@ -76,3 +76,33 @@ A definition is authored data, and it is checked rather than trusted.
 | `role` | present and not empty |
 
 An invalid definition is returned to the author with the list of errors. The lint is in the documentation suite, so a bad definition is caught before an agent starts.
+
+## The renderer contract
+
+The prompt an agent receives is rendered from this template, never hand-assembled.
+
+| Field the renderer must fill | Empty means |
+|---|---|
+| Role | the task is rejected |
+| Family | the task is rejected |
+| Thread | the task is rejected |
+| Hours | the task is rejected |
+| Scope | rendered as "none: this task writes no file" for a policy task |
+| Steps | the task is rejected |
+| Done when | the task is rejected |
+
+`src/tests/docs/task_render.py` is that contract as executable code: `validation_errors(task, detail)` returns one entry per empty required field, and `render(task, detail)` raises listing every empty field rather than producing a prompt with a hole in it. A shell-family task must also name the screens it touches, because that is what the shell definition of done verifies. A task with no repository path is valid and renders with an explicit "writes no file" scope.
+
+The renderer has been run over the real plan data: all 1,036 authored tasks render, except that 23 UI tasks are rejected for naming no screens. That rejection is correct and is the shell definition of done doing its job; those tasks need their screens listed before they can start.
+
+## Consumer tasks and handover
+
+A task that consumes a contract reads [handover.md](handover.md) first. The note there names the producer, the consumer, the settled decisions and the open questions, and a consumer task may not start from an unsettled contract without asking.
+
+## Prose and executable
+
+| Part of this page | Executable today |
+|---|---|
+| the required fields and their rules | yes: `src/tests/docs/task_definition_lint.py` |
+| the renderer contract | yes: `src/tests/docs/task_render.py`, run over the real plan |
+| the handover link | prose here; the four-field rule is executable in `src/tests/docs/handover.py` |

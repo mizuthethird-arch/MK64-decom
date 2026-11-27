@@ -116,6 +116,35 @@ This is recorded as an open item rather than claimed as done. There is no SEC ag
 
 The lint is the executable part: it rejects a definition with too many hours, too many or too few steps, no `T` first step, no measurable done condition, or no role.
 
+## The plan lint
+
+`src/tests/docs/plan_lint.py` checks the authored plan against the full rule set on this page. Every violation names the exact reason.
+
+| Rule checked | Violation when |
+|---|---|
+| known role | the role is not one of the twelve lanes |
+| first step | the first step is not a `T` step |
+| step kind | any step has no known kind |
+| step count | fewer than 4 or more than 7 steps |
+| hours | outside 0.5 to 3 |
+| measurable done condition | an engine task's done condition carries no hash or measurable marker |
+| shell screens | a shell task names no screens |
+| thread | the thread is empty or missing |
+| dependency | a dependency is not in the plan |
+
+A fixture that breaks each rule produces exactly one violation, and empty or malformed input is rejected with its exact reason rather than crashing.
+
+### What the lint found in the real plan
+
+Running the lint over the 1,036 authored tasks on 2026-11-27 produced **435 violations in two kinds**. The lint is correct and the plan data is what it flags. This is recorded here rather than hidden, because a lint whose first real run is quietly skipped is worse than no lint.
+
+| Finding | Count | Consequence |
+|---|---|---|
+| done condition not measurable | 412 of 1,036 | those tasks need their done condition rewritten to name a hash or a measurable check before they are worked |
+| shell task naming no screens | 23 of 1,036 | the 23 UI tasks need their screens listed before the shell definition of done can be applied |
+
+No other rule is violated by the plan data.
+
 ## Related
 
 - [task-template.md](task-template.md): the template every prompt and issue uses
