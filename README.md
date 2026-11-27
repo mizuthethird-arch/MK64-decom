@@ -15,6 +15,9 @@ A 100% Rust rebuild of Mario Kart 64 (Europe) (Rev A), proven byte for byte agai
 - [docs/README.md](docs/README.md): the index of every documentation page and the behaviour it settles.
 - [docs/backlog.md](docs/backlog.md): the backlog, its critical path and the weekly review template.
 - [docs/parity-statement.md](docs/parity-statement.md): the single parity statement, included elsewhere by reference.
+- [docs/corpus.md](docs/corpus.md): corpus retention, the size ceiling and the release-gate exemption.
+- [docs/release.md](docs/release.md): the version scheme, the tag rule, hotfixes and the support window.
+- [docs/measurement.md](docs/measurement.md): the command behind every reported metric.
 
 ## Layout
 
