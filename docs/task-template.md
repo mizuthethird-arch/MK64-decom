@@ -8,8 +8,9 @@ Every prompt and every issue that hands work to an agent uses this shape. A task
 
 ```
 Role: <lane, for example ARCH, PM, LEG, QA>
+Family: <shell or engine: which definition of done applies>
 Thread: <thread id>
-Hours: <0.5 to 3>
+Hours: <0.5 up to but not including 3>
 Scope: <the paths this task may write>
 
 Context:
@@ -36,8 +37,9 @@ Rules:
 | Field | Required | Why it exists |
 |---|---|---|
 | Role | yes | decides who owns the outcome and who may review it |
+| Family | yes | `shell` or `engine`, which picks the definition of done in [agent-rules.md](agent-rules.md) |
 | Thread | yes | groups tasks that share a goal into one workstream |
-| Hours | yes | must sit between 0.5 and 3, or the task is split or merged |
+| Hours | yes | must sit from 0.5 up to but not including 3, or the task is split or merged |
 | Scope | yes | the only paths the agent may write; a file touched outside it is reverted |
 | Context | yes | names what exists today so the agent reads rather than guesses |
 | Steps | yes | 4 to 7 steps, first one a `T` step |

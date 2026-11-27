@@ -12,6 +12,9 @@ A 100% Rust rebuild of Mario Kart 64 (Europe) (Rev A), proven byte for byte agai
 - [docs/rust-only.md](docs/rust-only.md): every shipped crate is Rust, and the one C++ exception that never ships.
 - [docs/parity.md](docs/parity.md): what bit-exact means per artifact, the parity pyramid and who owns a mismatch.
 - [docs/agent-rules.md](docs/agent-rules.md): the task and session rules every agent follows, and the task template.
+- [docs/README.md](docs/README.md): the index of every documentation page and the behaviour it settles.
+- [docs/backlog.md](docs/backlog.md): the backlog, its critical path and the weekly review template.
+- [docs/parity-statement.md](docs/parity-statement.md): the single parity statement, included elsewhere by reference.
 
 ## Layout
 

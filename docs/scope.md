@@ -142,13 +142,40 @@ Every release publishes a checksum per artifact and a bill of materials. A build
 
 ## Parked: not in this rebuild
 
-These features are named so no agent proposes them. Each has one reason and the person who said no.
+These features are named so no agent proposes them. Each carries a decision, a date and the owner who made it.
 
-| Parked feature | Reason | Decider |
-|---|---|---|
-| Netplay | The parity claim is a byte comparison against the oracle for local frame timing, and a network path makes every comparison depend on a clock the project does not control. | human owner (P00 decision record, no individual named) |
-| Mods | Content replacement would make "the rebuilt frame equals the oracle frame" false for any modded install, which is the one property the whole plan is measured by. | human owner (P00 decision record, no individual named) |
-| Texture packs | A replaced texture breaks the byte equality of the rendered frame, and no asset is shipped or extracted, so a texture pack would also be the first repository-hosted game data. | human owner (P00 decision record, no individual named) |
-| macOS gate | There is no macOS build in this plan, so there is no gate to prove, and an unproven platform must not be listed as supported. | human owner (P00 decision record, no individual named) |
-| Mobile | The shell assumes a keyboard or gamepad and a windowed desktop surface, and a touch rebuild would be a second product rather than a port. | human owner (P00 decision record, no individual named) |
-| Achievements | Achievements are a parallel shell-invented progression that contradicts the shell rule of never re-skinning or extending the game's own progression. | human owner (P00 decision record, no individual named) |
+| Parked feature | Decision | Decision date | Decider |
+|---|---|---|---|
+| Netplay | No | 2026-11-27 | human owner (P00 decision record, no individual named) |
+| Mods | No | 2026-11-27 | human owner (P00 decision record, no individual named) |
+| Texture packs | No | 2026-11-27 | human owner (P00 decision record, no individual named) |
+| macOS gate | No | 2026-11-27 | human owner (P00 decision record, no individual named) |
+| Mobile | No | 2026-11-27 | human owner (P00 decision record, no individual named) |
+| Achievements | No | 2026-11-27 | human owner (P00 decision record, no individual named) |
+
+## Why each is parked
+
+One sentence per parked feature. The reason is what makes the decision revisitable rather than arbitrary.
+
+| Parked feature | Reason |
+|---|---|
+| Netplay | The parity claim is a byte comparison against the oracle for local frame timing, and a network path makes every comparison depend on a clock the project does not control. |
+| Mods | Content replacement would make "the rebuilt frame equals the oracle frame" false for any modded install, which is the one property the whole plan is measured by. |
+| Texture packs | A replaced texture breaks the byte equality of the rendered frame, and no asset is shipped or extracted, so a texture pack would also be the first repository-hosted game data. |
+| macOS gate | There is no macOS build in this plan, so there is no gate to prove, and an unproven platform must not be listed as supported. |
+| Mobile | The shell assumes a keyboard or gamepad and a windowed desktop surface, and a touch rebuild would be a second product rather than a port. |
+| Achievements | Achievements are a parallel shell-invented progression that contradicts the shell rule of never re-skinning or extending the game's own progression. |
+
+## Adding a parked item
+
+A feature is parked only when the human owner decides it, and the row carries all four fields. The scope lint rejects a row that is missing any of them.
+
+| Field | Value |
+|---|---|
+| Parked feature | the feature name, as a user would say it |
+| Decision | the word No |
+| Decision date | the date the owner decided, as `YYYY-MM-DD` |
+| Decider | who decided; use `human owner (P00 decision record, no individual named)` when the record names no individual |
+| Reason | one sentence, in the reasons table above |
+
+A parked row without a date or an owner is not a decision. It is removed or completed, never left half-written.
