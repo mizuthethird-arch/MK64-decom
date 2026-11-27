@@ -117,10 +117,18 @@ class ScopeDocumentTest(unittest.TestCase):
             self.assertIn(feature, features)
         self.assertTrue(rows, "the parked table must list features")
         for row in rows:
-            self.assertEqual(len(row), 3, row)
-            self.assertTrue(row[1].strip(), f"{row[0]} needs a one-line reason")
-            self.assertTrue(row[2].strip(), f"{row[0]} needs a decider")
-            self.assertNotIn("[assign", row[2], f"{row[0]} still holds a placeholder")
+            self.assertEqual(len(row), 4, row)
+            self.assertTrue(row[1].strip(), f"{row[0]} needs a decision")
+            self.assertTrue(row[2].strip(), f"{row[0]} needs a decision date")
+            self.assertTrue(row[3].strip(), f"{row[0]} needs a decider")
+            self.assertNotIn("[assign", row[3], f"{row[0]} still holds a placeholder")
+
+    def test_every_parked_feature_carries_one_sentence_of_reasoning(self):
+        reasons = table_rows(section_of(self.markdown, "Why each is parked"))
+        self.assertEqual(len(reasons), 6)
+        for row in reasons:
+            self.assertEqual(len(row), 2, row[0])
+            self.assertTrue(row[1].strip(), f"{row[0]} needs a reason")
 
 
 if __name__ == "__main__":

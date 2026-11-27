@@ -1,0 +1,20 @@
+title = "MK64 native rebuild secret scan"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "mk64-private-key-header"
+description = "A private key block header, which is the first line of a key even before any body is present"
+regex = '''-----BEGIN (RSA|EC|OPENSSH|PGP|DSA) PRIVATE KEY( BLOCK)?-----'''
+keywords = ["PRIVATE KEY"]
+tags = ["key", "private-key"]
+
+[allowlist]
+description = "The scanners and their test fixtures name these shapes on purpose; allowlisting by path keeps them detectable everywhere else"
+paths = [
+    '''^tests/docs/secret_scan\.py$''',
+    '''^tests/docs/test_secrets\.py$''',
+    '''^tests/docs/evidence/''',
+    '''^tools/test-secret-scan\.sh$''',
+]

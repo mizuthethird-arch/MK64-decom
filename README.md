@@ -8,6 +8,18 @@ A 100% Rust rebuild of Mario Kart 64 (Europe) (Rev A), proven byte for byte agai
 - [docs/rom.md](docs/rom.md): the one accepted image, the checks applied to it, and the rules that keep it out of git and out of every artifact.
 - [docs/rom-contract.md](docs/rom-contract.md): the exact acceptance rule, the byte orders and the refusal behaviour.
 - [docs/assets.md](docs/assets.md): no game data and no key in the repository or in any release, enforced by a test.
+- [docs/legal.md](docs/legal.md): the legal, asset and key policy in one page.
+- [docs/rust-only.md](docs/rust-only.md): every shipped crate is Rust, and the one C++ exception that never ships.
+- [docs/parity.md](docs/parity.md): what bit-exact means per artifact, the parity pyramid and who owns a mismatch.
+- [docs/agent-rules.md](docs/agent-rules.md): the task and session rules every agent follows, and the task template.
+- [docs/README.md](docs/README.md): the index of every documentation page and the behaviour it settles.
+- [docs/backlog.md](docs/backlog.md): the backlog, its critical path and the weekly review template.
+- [docs/parity-statement.md](docs/parity-statement.md): the single parity statement, included elsewhere by reference.
+- [docs/corpus.md](docs/corpus.md): corpus retention, the size ceiling and the release-gate exemption.
+- [docs/release.md](docs/release.md): the version scheme, the tag rule, hotfixes and the support window.
+- [docs/measurement.md](docs/measurement.md): the command behind every reported metric.
+- [docs/secrets.md](docs/secrets.md): every secret, its storage, rotation and failure behaviour, and the scan rule.
+- [docs/pr-rules.md](docs/pr-rules.md): what a pull request may not contain, and the check that enforces each rule.
 
 ## Layout
 

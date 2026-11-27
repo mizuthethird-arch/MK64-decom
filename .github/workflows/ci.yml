@@ -31,7 +31,9 @@ jobs:
             echo "FAIL: git ls-files returned nothing; cannot prove the ROM is absent" >&2
             exit 1
           fi
-          forbidden=$(printf '%s\n' "$tracked" | grep -Ei '(^|/)rom/|\.(n64|v64|z64)$' || true)
+          forbidden=$(printf '%s\n' "$tracked" \
+            | grep -Ei '(^|/)rom/|\.(n64|v64|z64)$' \
+            | grep -Evx 'rom/\.gitkeep' || true)
           if [ -n "$forbidden" ]; then
             echo "FAIL: ROM content is tracked in this repository:" >&2
             printf '%s\n' "$forbidden" >&2
@@ -104,3 +106,86 @@ jobs:
             --tmpfs /tmp:rw,noexec,nosuid,size=64m \
             -v "$PWD/tools:/tools:ro" \
             --entrypoint /bin/sh mk64-rust:ci /tools/verify-docker.sh
+
+  secret-scan:
+    name: secret scan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: working tree scan
+        # --source . keeps reported paths relative so the path allowlist in .gitleaks.toml matches; --exit-code 1
+        # makes a finding fail the job, and any gitleaks error also exits nonzero, so the step fails closed.
+        run: |
+          docker run --rm --network none --read-only \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            -v "$PWD:/repo:ro" \
+            -v "$PWD/.gitleaks.toml:/cfg/.gitleaks.toml:ro" \
+            -w /repo \
+            --entrypoint gitleaks zricethezav/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
+            detect --source . --no-git --config /cfg/.gitleaks.toml --redact --exit-code 1
+
+  secret-history-scan:
+    name: secret history scan
+    # A secret committed once stays exposed in a public repository's history, but rescanning all of it on
+    # every pull request is slow and gets ignored, so this runs only when the repository variable opts in.
+    if: ${{ vars.MK64_HISTORY_SCAN == 'on' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: scan the full commit history
+        # No --no-git here: gitleaks walks the commits, which is why this job needs fetch-depth 0.
+        run: |
+          docker run --rm --network none --read-only \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            -v "$PWD:/repo:ro" \
+            -v "$PWD/.gitleaks.toml:/cfg/.gitleaks.toml:ro" \
+            -w /repo \
+            --entrypoint gitleaks zricethezav/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
+            detect --source . --config /cfg/.gitleaks.toml --redact --exit-code 1
+
+  plan-lint:
+    name: plan lint
+    # The plan data lives outside this repository, so this is opt-in and is deliberately not a required check.
+    # When it does run, the runner still exits 2 naming the missing path if the mount is absent: a run that
+    # cannot read the data fails loudly rather than reporting success.
+    if: ${{ vars.MK64_PLAN_CHECK == 'on' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    container:
+      image: python:3.12-slim@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: lint the authored plan against the pinned violation baseline
+        # 412 prose done_when and 23 UI tasks with no screens are known and pinned in the runner; any new
+        # violation, or a violation of another kind, fails and is named.
+        run: python tools/ci/plan_lint_run.py "${MK64_PLAN_DIR:-/nonexistent-plan-data}"
+        env:
+          MK64_PLAN_DIR: ${{ vars.MK64_PLAN_DIR }}
+
+  screen-coverage:
+    name: screen coverage
+    # The same mounted data as the plan lint, so the same opt-in variable gates it; also not a required check.
+    if: ${{ vars.MK64_PLAN_CHECK == 'on' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    container:
+      image: python:3.12-slim@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: fail naming any screen that no task owns
+        run: python tools/ci/coverage_lint_run.py "${MK64_PLAN_DIR:-/nonexistent-plan-data}"
+        env:
+          MK64_PLAN_DIR: ${{ vars.MK64_PLAN_DIR }}
