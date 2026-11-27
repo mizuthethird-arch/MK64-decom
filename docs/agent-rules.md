@@ -36,10 +36,49 @@ A task definition is valid only when all of these are present.
 | Field | Meaning |
 |---|---|
 | Role | the lane that owns the work, for example `ARCH`, `PM`, `LEG` |
+| Family | `shell` or `engine`, which picks the definition of done below |
 | Hours | a number from 0.5 up to but not including 3 |
 | Steps | 4 to 7 steps, the first of which is a `T` step |
-| Done when | a hash or a measurable check that a human can run |
+| Done when | the definition of done for the task's family |
 | Scope | the paths the task may write |
+
+## Two definitions of done
+
+Engine work and shell work are proven differently. Mixing the two makes shell tasks look unfinished forever, because a screenshot cannot be hashed and a hash cannot describe a keyboard focus ring.
+
+### Definition of done: engine
+
+An engine task is done when a recorded artifact matches the reference by hash.
+
+| Criterion | Checked by |
+|---|---|
+| The recorded artifacts match byte for byte under [parity.md](parity.md) | the corpus comparator |
+| The mismatch owner is the task's own layer, per the mismatch table in [parity.md](parity.md) | the diff tool |
+
+### Definition of done: shell
+
+A shell task is done when a person can reach and understand every surface it touches.
+
+| Criterion | Checked by |
+|---|---|
+| Every screen is reachable by keyboard | the shell navigation test |
+| Every screen is reachable by gamepad | the shell navigation test |
+| Strings: every user-visible string is externalised and none is left in code | the string extraction test |
+| Every failure is readable: the player is told what failed and what to do | the failure-path test |
+| Accessibility checks are green: announced state changes, text scaling, reduced motion, high contrast | the accessibility test |
+
+### Which definition applies
+
+The role decides the family, and `src/tests/docs/done_family.py` is the executable answer: call `family_of_role` for the family and `definition_of_done_for` for the definition a task must satisfy. An unknown role is rejected rather than guessed.
+
+| Role | Family |
+|---|---|
+| `UI` | shell |
+| `RDP`, `RSP`, `RT`, `GAME`, `PLAT`, `ARCH`, `TOOL`, `LEG`, `PM`, `QA` | engine |
+
+### A task that touches both families
+
+Some tasks are both, for example the diagnostics view: it is a shell screen that also displays parity counters and hashes. When a task touches both families, the **engine definition wins**. A hash failure is objective and must never be waived by a shell checklist. The shell criteria still apply, and a task that fails one of them is not done either, but the engine definition is the one that cannot be argued with.
 
 ## Agents never invent contracts
 
@@ -82,3 +121,4 @@ The lint is the executable part: it rejects a definition with too many hours, to
 - [task-template.md](task-template.md): the template every prompt and issue uses
 - [parity.md](parity.md): what a measurable done condition means for parity work
 - [scope.md](scope.md): what the project ships
+
