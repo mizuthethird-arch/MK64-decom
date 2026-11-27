@@ -49,6 +49,8 @@ These are the decisions a later agent would otherwise re-derive. Each one is enf
 | A task prompt is rendered from the template, never hand-assembled, and an empty required field rejects the task instead of producing a prompt with a hole. All 1,036 authored tasks render. | [task-template.md](task-template.md) | `src/tests/docs/task_render.py` |
 | Every settled contract carries a handover note naming producer, consumer, settled decisions and open questions. A consumer task reads it before starting and never starts from an unsettled contract. | [handover.md](handover.md) | `src/tests/docs/handover.py` |
 | The plan lint checks the full rule set from the rules page and reports the real plan's violations rather than hiding them: 450 of 1,036 done conditions are prose without a measurable marker. | [agent-rules.md](agent-rules.md) | `src/tests/docs/plan_lint.py` |
+| A corpus CI upload carries only hashes, counters, logs and small reports under 1 MiB. The image, any payload blob, any extracted asset and any recording embedding game bytes are refused, one forbidden item blocks the whole upload, and an empty list is refused. | [corpus.md](corpus.md) | `src/tests/docs/upload_audit.py` |
+| Every screen in the 24-screen catalogue is owned by at least one task. A screen owned by none fails the lint by name, and a screen a task names that is not in the catalogue is reported. All 24 are currently owned. | [corpus.md](corpus.md), [backlog.md](backlog.md) | `src/tests/docs/coverage_lint.py` |
 
 ## Toolkit follow-up needed
 
@@ -61,6 +63,8 @@ These items belong to the toolkit lane and are recorded here because the docs la
 | Read the blueprint `INTERFACES` registry at build time so `docs/handover.md` is generated rather than snapshotted. | the corpus or docs tooling |
 | Add the **secret scan** job: gitleaks pinned by digest, a working-tree scan blocking on every pull request, a history scan gated on `vars.MK64_HISTORY_SCAN`, and a custom private-key-header rule. The rule set it must satisfy is executable in `src/tests/docs/secret_scan.py`. | the CI workflow |
 | Add the checks for the six unenforced pull-request rules in `docs/pr-rules.md`, one row per rule: (4) a cargo-deny licence check over the dependency tree once the first Cargo.toml exists; (5) the `nm`/`ldd` C++ check from `docs/rust-only.md` against the shipped binary; (6) the docs job comparing the discovered test count against the base branch and failing if it decreased; (7) a path-based owner-only edit guard for policy, hook, agent-definition and workflow paths; (8) a blueprint-task-id field in the pull request template, validated by a job; (9) a reviewer checklist item for unverified claims. | the CI workflow and the pull request template |
+| Add the corpus job's **audit step** and make the ordering explicit: the audit step runs BEFORE any upload step, and a failed audit blocks the upload so nothing is uploaded. The audit must call `src/tests/docs/upload_audit.py` on the declared artifact list rather than reimplementing the allowlist. | the CI workflow (corpus job) |
+| Add a **screen coverage** check: run `src/tests/docs/coverage_lint.py` over the blueprint `SCREENS` catalogue and the plan's `screens` fields, and fail the job naming any unowned screen. | the CI workflow and `tools/lint/README.md` |
 
 ## Prose and executable
 
