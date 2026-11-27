@@ -31,7 +31,9 @@ jobs:
             echo "FAIL: git ls-files returned nothing; cannot prove the ROM is absent" >&2
             exit 1
           fi
-          forbidden=$(printf '%s\n' "$tracked" | grep -Ei '(^|/)rom/|\.(n64|v64|z64)$' || true)
+          forbidden=$(printf '%s\n' "$tracked" \
+            | grep -Ei '(^|/)rom/|\.(n64|v64|z64)$' \
+            | grep -Evx 'rom/\.gitkeep' || true)
           if [ -n "$forbidden" ]; then
             echo "FAIL: ROM content is tracked in this repository:" >&2
             printf '%s\n' "$forbidden" >&2
