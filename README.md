@@ -8,6 +8,10 @@ A 100% Rust rebuild of Mario Kart 64 (Europe) (Rev A), proven byte for byte agai
 - [docs/rom.md](docs/rom.md): the one accepted image, the checks applied to it, and the rules that keep it out of git and out of every artifact.
 - [docs/rom-contract.md](docs/rom-contract.md): the exact acceptance rule, the byte orders and the refusal behaviour.
 - [docs/assets.md](docs/assets.md): no game data and no key in the repository or in any release, enforced by a test.
+- [docs/legal.md](docs/legal.md): the legal, asset and key policy in one page.
+- [docs/rust-only.md](docs/rust-only.md): every shipped crate is Rust, and the one C++ exception that never ships.
+- [docs/parity.md](docs/parity.md): what bit-exact means per artifact, the parity pyramid and who owns a mismatch.
+- [docs/agent-rules.md](docs/agent-rules.md): the task and session rules every agent follows, and the task template.
 
 ## Layout
 
