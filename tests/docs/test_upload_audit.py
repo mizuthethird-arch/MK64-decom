@@ -5,6 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from upload_audit import (
+    KIND_CAPS,
     MAX_REPORT_BYTES,
     REASON_EMPTY,
     REASON_FORBIDDEN,
@@ -69,6 +70,42 @@ class ForbiddenTest(unittest.TestCase):
         result = audit_upload(SHAREABLE + [{"name": "rip.png", "kind": "asset"}])
         self.assertFalse(result["allowed"])
         self.assertEqual(len(result["blocked"]), 1)
+
+
+class KindCapTest(unittest.TestCase):
+    """T0023 follow-up: every kind has a cap, because an unbounded upload is an abuse vector."""
+
+    def test_every_shareable_kind_has_a_declared_cap(self):
+        for kind in ("hash", "counter", "log", "report"):
+            with self.subTest(kind=kind):
+                self.assertIn(kind, KIND_CAPS)
+
+    def test_an_over_cap_hash_manifest_is_blocked_naming_its_kind_and_size(self):
+        over = KIND_CAPS["hash"] + 1
+        allowed, reason = audit_artifact({"name": "frames.jsonl", "kind": "hash", "bytes": over})
+        self.assertFalse(allowed)
+        self.assertIn("hash", reason)
+        self.assertIn(str(over), reason)
+
+    def test_an_over_cap_counter_file_is_blocked_naming_its_kind_and_size(self):
+        over = KIND_CAPS["counter"] + 1
+        allowed, reason = audit_artifact({"name": "counters.json", "kind": "counter", "bytes": over})
+        self.assertFalse(allowed)
+        self.assertIn("counter", reason)
+        self.assertIn(str(over), reason)
+
+    def test_a_hash_manifest_exactly_at_the_cap_is_allowed(self):
+        allowed, _ = audit_artifact(
+            {"name": "frames.jsonl", "kind": "hash", "bytes": KIND_CAPS["hash"]}
+        )
+        self.assertTrue(allowed)
+
+    def test_an_over_cap_item_blocks_the_whole_upload(self):
+        result = audit_upload(
+            SHAREABLE + [{"name": "huge.bin", "kind": "counter", "bytes": KIND_CAPS["counter"] + 1}]
+        )
+        self.assertFalse(result["allowed"])
+        self.assertEqual(result["blocked"], ["huge.bin"])
 
 
 class MalformedInputTest(unittest.TestCase):

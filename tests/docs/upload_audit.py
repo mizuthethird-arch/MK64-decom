@@ -32,6 +32,15 @@ REASON_BLOCKED = "upload blocked because {blocked} artifact(s) failed the audit"
 
 MAX_REPORT_BYTES = 1024 * 1024
 
+MIB = 1024 * 1024
+
+KIND_CAPS = {
+    "hash": 64 * MIB,
+    "counter": 64 * MIB,
+    "log": 1 * MIB,
+    "report": MAX_REPORT_BYTES,
+}
+
 
 def audit_artifact(artifact):
     """Returns (allowed, reason) for one artifact item."""
@@ -46,8 +55,9 @@ def audit_artifact(artifact):
     if kind not in SHAREABLE_KINDS:
         return False, REASON_UNKNOWN.format(kind=kind)
     size = artifact.get("bytes")
-    if isinstance(size, int) and size > MAX_REPORT_BYTES and kind in ("report", "log"):
-        return False, f"artifact {name!r} is {size} bytes, over the {MAX_REPORT_BYTES} byte cap for {kind}"
+    cap = KIND_CAPS[kind]
+    if isinstance(size, int) and size > cap:
+        return False, f"artifact {name!r} of kind {kind} is {size} bytes, over the {cap} byte cap for {kind}"
     return True, REASON_ALLOWED.format(kind=kind)
 
 

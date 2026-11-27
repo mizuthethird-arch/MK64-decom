@@ -65,6 +65,9 @@ rather than a stack of guesses.
 | `test-bootstrap.sh` | copies the repo to a scratch dir and asserts `bootstrap.sh` reaches `BOOTSTRAP-OK` |
 | `test-secret-scan.sh` | proves the secret scan: clean tree passes, eight planted secrets are each detected, a clean file stays clean |
 | `scan-for-rom-content.py` | opt-in deep scan for resident ROM content in tracked files |
+| `ci/plan_lint_run.py` | runs the plan lint over the blueprint plan against a pinned violation baseline |
+| `ci/coverage_lint_run.py` | fails naming any screen in the catalogue that no task owns |
+| `ci/prompt.py` | renders one task prompt from the plan data; see `tools/prompt/README.md` |
 | `bootstrap.sh` | the one command above |
 
 ```sh
@@ -72,6 +75,44 @@ sh tools/test-verify-docker.sh   # image proof, writes src/logs/test-verify-dock
 sh tools/test-bootstrap.sh       # bootstrap proof, writes src/logs/test-bootstrap.txt
 sh tools/test-secret-scan.sh     # secret-scan proof, writes src/logs/test-secret-scan.txt
 ```
+
+## Plan and coverage checks
+
+Two CI jobs read data that lives **outside** this repository, because the blueprint
+directory is not part of the public repo:
+
+| job | display name | step | timeout |
+|---|---|---|---|
+| plan lint | `plan lint` | `python tools/ci/plan_lint_run.py "$MK64_PLAN_DIR"` | 10 min |
+| screen coverage | `screen coverage` | `python tools/ci/coverage_lint_run.py "$MK64_PLAN_DIR"` | 10 min |
+
+Both jobs are **opt-in and intentionally not required checks**. They run only when the
+repository variable `MK64_PLAN_CHECK` is set to `on` **and** a blueprint directory is
+mounted on the runner at `MK64_PLAN_DIR`; otherwise they are skipped, because the plan
+data is not part of this public repository and a check that is red only because the data
+is absent would teach everyone to ignore red.
+
+When the variable is on, the runners still fail closed: if the mount is missing they exit
+**2** and print which files they could not find. They never exit 0 without having read the
+real data, so an opted-in run can never report success from a missing blueprint.
+
+The plan lint pins the known baseline in the runner:
+
+```
+records: 1036 (expected 1036)
+violations: 435
+   412 prose done_when       (baseline 412)
+    23 UI task with no screens  (baseline 23)
+     0 other
+PLAN-LINT-OK: no violation outside the pinned baseline
+```
+
+A new violation of either known kind, or any violation of a third kind, fails and is
+named. The screen coverage job fails and names any catalogue screen that no task owns.
+
+The baseline fails only when a count **exceeds** it, because a drop is an improvement and
+must not break the build. When the counts drop, lower the pinned baseline in the same pull
+request, otherwise a later regression back to the old number will not be caught.
 
 ## Secret scan
 
